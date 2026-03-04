@@ -120,12 +120,12 @@ server.registerTool(
   },
 );
 
-// send direct message
+// send message
 server.registerTool(
-  "sendDirectMessage",
+  "sendMessage",
   {
-    title: "Send a direct message",
-    description: "allows you to send a direct message on discord. Need channel's id (can be recovered using directMessage tool)",
+    title: "Send message",
+    description: "allows you to send message on discord (guild or direct message).",
     inputSchema: z.object({
       channelId: z.string().describe("need to be recovered from direct message list"),
       content: z.string().describe("content of the message you will send")
@@ -134,7 +134,7 @@ server.registerTool(
   async ({channelId, content}) => {
     console.log(channelId);
     
-    const res = await fetch(`https://discord.com/api/v9/channels/${channelId}/messages`, {
+    const res = await fetch(`https://discord.com/api/v9/channels/${channelId}/messages`,{
       method: "POST",
       headers: {
         "content-type": "application/json",
