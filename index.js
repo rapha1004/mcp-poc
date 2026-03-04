@@ -125,7 +125,7 @@ server.registerTool(
   "sendMessage",
   {
     title: "Send a direct message",
-    description: "allows you to send a direct message on discord. Need channel's id (can be recovered using directMessage tool",
+    description: "allows you to send a direct message on discord. Need channel's id (can be recovered using directMessage tool)",
     inputSchema: z.object({
       channelId: z.string().describe("need to be recovered from direct message list"),
       content: z.string().describe("content of the message you will send")
@@ -143,6 +143,36 @@ server.registerTool(
       body: JSON.stringify({
         content: content
       })
+    });
+    const data = await res.json();
+    
+    return {
+      content: [{ type: "text", text: JSON.stringify(data)}]
+    }
+  },
+);
+
+// get message history
+server.registerTool(
+  "getMessageHistory",
+  {
+    title: "get message history",
+    description: "allows you to recover the message history from a conversation. Need channel's id (can be recovered using directMessage tool",
+    inputSchema: z.object({
+      channelId: z.string().describe("need to be recovered from direct message list"),
+      beforeId: z.nullable(z.string().describe("you retrieve the message but before the specified id (by default you can't use this input)")),
+      limit: z.number().describe("number of message you get (max 100)")
+    }),
+  },
+  async ({channelId, beforeId, limit}) => {
+    console.log(channelId);
+    
+    const res = await fetch(`https://discord.com/api/v9/channels/${channelId}/messages?limit=${limit}${beforeId ? `&before=${beforeId}` : ""}`, {
+      method: "GET",
+      headers: {
+        "content-type": "application/json",
+        Authorization: process.env.DISCORD_TOKEN,
+      }
     });
     const data = await res.json();
     
@@ -174,7 +204,7 @@ app.post("/mcp", async (req, res) => {
   await transport.handleRequest(req, res, req.body);
 });
 
-const port = parseInt(process.env.PORT || "3000");
+const port = parseInt(3000);
 app
   .listen(port, () => {
     console.log(`Demo MCP Server running on http://localhost:${port}/mcp`);
