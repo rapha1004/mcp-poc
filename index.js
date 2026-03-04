@@ -122,7 +122,7 @@ server.registerTool(
 
 // send direct message
 server.registerTool(
-  "sendMessage",
+  "sendDirectMessage",
   {
     title: "Send a direct message",
     description: "allows you to send a direct message on discord. Need channel's id (can be recovered using directMessage tool)",
