@@ -25,6 +25,7 @@ server.registerTool(
   },
 );
 
+
 // joke
 server.registerTool(
   "joke",
@@ -47,6 +48,7 @@ server.registerTool(
     };
   },
 );
+
 
 // get profil
 server.registerTool(
@@ -72,6 +74,7 @@ server.registerTool(
   },
 );
 
+
 //  get relationship
 server.registerTool(
   "relationships",
@@ -95,6 +98,7 @@ server.registerTool(
     }
   },
 );
+
 
 //  get channel (guild or direct message)
 server.registerTool(
@@ -122,6 +126,7 @@ server.registerTool(
     }
   },
 );
+
 
 // send message
 server.registerTool(
@@ -185,6 +190,7 @@ server.registerTool(
     }
   },
 );
+
 
 //  get guilds list
 server.registerTool(
