@@ -103,13 +103,13 @@ server.registerTool(
     title: "Get channel list",
     description: "get the list of channel (guild or direct message) from discord (allows you to retrieve the channel ID, returned as id in the response).",
     inputSchema: {
-      guidId: z.nullable(z.string().describe("if you want channel from a guild"))
+      guildId: z.string().optional().describe("if you want channel from a guild")
     }
   },
   async ({ guildId }) => {
     console.log("channel list");
     
-    const res = await fetch(`https://discord.com/api/v9/${guildId ? `guilds/${guildId}` : `users/@me`}/channels`, {
+    const res = await fetch(guildId ? `https://discord.com/api/v9/guilds/${guildId}/channels` : `https://discord.com/api/v9/users/@me/channels`, {
       method: "GET",
       headers: {
         Authorization: process.env.DISCORD_TOKEN,
