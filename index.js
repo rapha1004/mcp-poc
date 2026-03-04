@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import express from "express";
-import { z } from "zod";
+import { guid, z } from "zod";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -96,17 +96,20 @@ server.registerTool(
   },
 );
 
-//  get direct message
+//  get channel
 server.registerTool(
-  "directMessage",
+  "getChannelList",
   {
-    title: "Get direct message",
-    description: "get the list of direct message from discord (allows you to retrieve the channel ID, returned as id in the response).",
+    title: "Get channel list",
+    description: "get the list of channel (guild or direct message) from discord (allows you to retrieve the channel ID, returned as id in the response).",
+    inputSchema: {
+      guidId: z.nullable(z.string().describe("if you want channel from a guild"))
+    }
   },
-  async () => {
-    console.log("direct message");
+  async ({ guildId }) => {
+    console.log("channel list");
     
-    const res = await fetch("https://discord.com/api/v9/users/@me/channels", {
+    const res = await fetch(`https://discord.com/api/v9/${guildId ? `guilds/${guildId}` : `users/@me`}/channels`, {
       method: "GET",
       headers: {
         Authorization: process.env.DISCORD_TOKEN,
@@ -152,12 +155,13 @@ server.registerTool(
   },
 );
 
+
 // get message history
 server.registerTool(
   "getMessageHistory",
   {
     title: "get message history",
-    description: "allows you to recover the message history from a conversation. Need channel's id (can be recovered using directMessage tool",
+    description: "allows you to recover the message history from a conversation or a guild channel. Need channel's id (can be recovered using directMessage tool",
     inputSchema: z.object({
       channelId: z.string().describe("need to be recovered from direct message list"),
       beforeId: z.nullable(z.string().describe("you retrieve the message but before the specified id (by default you can't use this input)")),
@@ -208,35 +212,6 @@ server.registerTool(
     }
   },
 );
-
-//  get guild channel
-server.registerTool(
-  "guildChannel",
-  {
-    title: "Get guild channel",
-    description: "get the list channel in a specific guild from discord (allows you to retrieve the channel ID, returned as id in the response).",
-    inputSchema: z.object({
-      guildId: z.string().describe("need to be recovered from guild list")
-    }),
-  },
-
-  async ({ guildId }) => {
-    console.log("guilds channel");
-    
-    const res = await fetch(`https://discord.com/api/v9/guilds/${guildId}/channels`, {
-      method: "GET",
-      headers: {
-        Authorization: process.env.DISCORD_TOKEN,
-      },
-    });
-    const data = await res.json();
-
-    return {
-      content: [{ type: "text", text: JSON.stringify(data, null, 2)}]
-    }
-  },
-);
-
 
 
 
