@@ -43,7 +43,7 @@ server.registerTool(
     const data = await res.json();
 
     return {
-      content: [{ type: "text", text: JSON.stringify(data) }],
+      content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
     };
   },
 );
@@ -67,7 +67,7 @@ server.registerTool(
     const data = await res.json();
     
     return {
-      content: [{ type: "text", text: JSON.stringify(data)}]
+      content: [{ type: "text", text: JSON.stringify(data, null, 2)}]
     }
   },
 );
@@ -91,7 +91,7 @@ server.registerTool(
     const data = await res.json();
     
     return {
-      content: [{ type: "text", text: JSON.stringify(data)}]
+      content: [{ type: "text", text: JSON.stringify(data, null, 2)}]
     }
   },
 );
@@ -115,7 +115,7 @@ server.registerTool(
     const data = await res.json();
     
     return {
-      content: [{ type: "text", text: JSON.stringify(data)}]
+      content: [{ type: "text", text: JSON.stringify(data, null, 2)}]
     }
   },
 );
@@ -147,7 +147,7 @@ server.registerTool(
     const data = await res.json();
     
     return {
-      content: [{ type: "text", text: JSON.stringify(data)}]
+      content: [{ type: "text", text: JSON.stringify(data, null, 2)}]
     }
   },
 );
@@ -177,10 +177,67 @@ server.registerTool(
     const data = await res.json();
     
     return {
-      content: [{ type: "text", text: JSON.stringify(data)}]
+      content: [{ type: "text", text: JSON.stringify(data, null, 2)}]
     }
   },
 );
+
+//  get guilds list
+server.registerTool(
+  "guildsList",
+  {
+    title: "Get guilds list",
+    description: "get the list of guilds from discord (allows you to retrieve the guild id, returned as id in the response).",
+  },
+  async () => {
+    console.log("guilds list");
+    
+    const res = await fetch("https://discord.com/api/v9/users/@me/guilds", {
+      method: "GET",
+      headers: {
+        Authorization: process.env.DISCORD_TOKEN,
+      },
+    });
+    const data = await res.json();
+    const guilds = data.map(guild => {
+      return {id: guild.id, name: guild.name, owner: guild.owner}
+    })
+    
+    return {
+      content: [{ type: "text", text: JSON.stringify(guilds, null, 2)}]
+    }
+  },
+);
+
+//  get guild channel
+server.registerTool(
+  "guildChannel",
+  {
+    title: "Get guild channel",
+    description: "get the list channel in a specific guild from discord (allows you to retrieve the channel ID, returned as id in the response).",
+    inputSchema: z.object({
+      guildId: z.string().describe("need to be recovered from guild list")
+    }),
+  },
+
+  async ({ guildId }) => {
+    console.log("guilds channel");
+    
+    const res = await fetch(`https://discord.com/api/v9/guilds/${guildId}/channels`, {
+      method: "GET",
+      headers: {
+        Authorization: process.env.DISCORD_TOKEN,
+      },
+    });
+    const data = await res.json();
+
+    return {
+      content: [{ type: "text", text: JSON.stringify(data, null, 2)}]
+    }
+  },
+);
+
+
 
 
 
