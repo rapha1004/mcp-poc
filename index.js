@@ -96,7 +96,7 @@ server.registerTool(
   },
 );
 
-//  get channel
+//  get channel (guild or direct message)
 server.registerTool(
   "getChannelList",
   {
@@ -156,7 +156,7 @@ server.registerTool(
 );
 
 
-// get message history
+// get message history (guild or direct message)
 server.registerTool(
   "getMessageHistory",
   {
