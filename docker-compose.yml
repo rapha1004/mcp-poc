@@ -1,16 +1,9 @@
-version: '5'
-
 services:
   mcp:
     build: .
-    container_name: mcp_dev
-    ports: 
-      - 3000:3000
-    develop:
-      watch:
-        - path: .
-          action: sync+restart
-          target: /app/
-
+    container_name: mcp_prod
+    ports:
+      - "3000:3000"
     env_file:
-      - ./.env
+      - .env
+    restart: unless-stopped
