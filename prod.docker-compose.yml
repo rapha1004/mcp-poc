@@ -1,0 +1,11 @@
+version: "5"
+
+services:
+  mcp:
+    build: .
+    container_name: mcp_prod
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    restart: unless-stopped

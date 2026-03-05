@@ -49,7 +49,6 @@ server.registerTool(
   },
 );
 
-
 // get profil
 server.registerTool(
   "profil",
@@ -59,7 +58,7 @@ server.registerTool(
   },
   async () => {
     console.log("profil");
-    
+
     const res = await fetch("https://discord.com/api/v9/users/@me", {
       method: "GET",
       headers: {
@@ -67,9 +66,9 @@ server.registerTool(
       },
     });
     const data = await res.json();
-    
+
     return {
-      content: [{ type: "text", text: JSON.stringify(data, null, 2)}]
+      content: [{ type: "text", text: JSON.stringify(data, null, 2) }]
     }
   },
 );
@@ -84,7 +83,7 @@ server.registerTool(
   },
   async () => {
     console.log("relationships");
-    
+
     const res = await fetch("https://discord.com/api/v9/users/@me/relationships", {
       method: "GET",
       headers: {
@@ -92,9 +91,37 @@ server.registerTool(
       },
     });
     const data = await res.json();
-    
+
     return {
-      content: [{ type: "text", text: JSON.stringify(data, null, 2)}]
+      content: [{ type: "text", text: JSON.stringify(data, null, 2) }]
+    }
+  },
+);
+
+// get list of category in a guild
+server.registerTool(
+  "getCategory",
+  {
+    title: "Get category list",
+    description: "get the list of category from discord. necessary for the categoryId in the getChannelList tool (allows you to retrieve the category ID, returned as id in the response).",
+    inputSchema: {
+      guildId: z.string().describe("id of the guild"),
+    }
+  },
+  async ({ guildId }) => {
+    console.log("category list");
+
+    const res = await fetch(`https://discord.com/api/v9/guilds/${guildId}/channels`, {
+      method: "GET",
+      headers: {
+        Authorization: process.env.DISCORD_TOKEN,
+      },
+    });
+    const data = await res.json();
+    const channels = data.filter(channel => channel.type === 4);
+
+    return {
+      content: [{ type: "text", text: JSON.stringify(channels, null, 2) }]
     }
   },
 );
@@ -107,12 +134,13 @@ server.registerTool(
     title: "Get channel list",
     description: "get the list of channel (guild or direct message) from discord (allows you to retrieve the channel ID, returned as id in the response).",
     inputSchema: {
-      guildId: z.string().optional().describe("if you want channel from a guild")
+      guildId: z.string().optional().describe("if you want channel from a guild"),
+      categoryId: z.string().optional().describe("if you want a channel in a specific category. To get only useful channels (use getCategory tool). need guildId")
     }
   },
-  async ({ guildId }) => {
+  async ({ guildId, categoryId }) => {
     console.log("channel list");
-    
+
     const res = await fetch(guildId ? `https://discord.com/api/v9/guilds/${guildId}/channels` : `https://discord.com/api/v9/users/@me/channels`, {
       method: "GET",
       headers: {
@@ -120,9 +148,27 @@ server.registerTool(
       },
     });
     const data = await res.json();
-    
+    const channels = data.map(channel => {
+      if (channel.type === 1 || channel.type === 3) {
+        return {
+          id: channel.id,
+          name: channel.recipients?.map(u => u.username).join(", "),
+          type: "dm"
+        }
+      } else if(categoryId) {
+        return channels.filter(channel => channel.parent_id === categoryId); 
+      }
+
+      return {
+        id: channel.id,
+        name: channel.name,
+        parentId: channel.parent_id,
+        type: "guild",
+        guildId: channel.guild_id ?? guildId
+      }
+    })
     return {
-      content: [{ type: "text", text: JSON.stringify(data, null, 2)}]
+      content: [{ type: "text", text: JSON.stringify(channels, null, 2) }]
     }
   },
 );
@@ -139,10 +185,10 @@ server.registerTool(
       content: z.string().describe("content of the message you will send")
     }),
   },
-  async ({channelId, content}) => {
+  async ({ channelId, content }) => {
     console.log(channelId);
-    
-    const res = await fetch(`https://discord.com/api/v9/channels/${channelId}/messages`,{
+
+    const res = await fetch(`https://discord.com/api/v9/channels/${channelId}/messages`, {
       method: "POST",
       headers: {
         "content-type": "application/json",
@@ -153,9 +199,9 @@ server.registerTool(
       })
     });
     const data = await res.json();
-    
+
     return {
-      content: [{ type: "text", text: JSON.stringify(data, null, 2)}]
+      content: [{ type: "text", text: JSON.stringify(data, null, 2) }]
     }
   },
 );
@@ -173,9 +219,9 @@ server.registerTool(
       limit: z.number().describe("number of message you get (max 100)")
     }),
   },
-  async ({channelId, beforeId, limit}) => {
+  async ({ channelId, beforeId, limit }) => {
     console.log(channelId);
-    
+
     const res = await fetch(`https://discord.com/api/v9/channels/${channelId}/messages?limit=${limit}${beforeId ? `&before=${beforeId}` : ""}`, {
       method: "GET",
       headers: {
@@ -184,9 +230,9 @@ server.registerTool(
       }
     });
     const data = await res.json();
-    
+
     return {
-      content: [{ type: "text", text: JSON.stringify(data, null, 2)}]
+      content: [{ type: "text", text: JSON.stringify(data, null, 2) }]
     }
   },
 );
@@ -201,7 +247,7 @@ server.registerTool(
   },
   async () => {
     console.log("guilds list");
-    
+
     const res = await fetch("https://discord.com/api/v9/users/@me/guilds", {
       method: "GET",
       headers: {
@@ -210,11 +256,11 @@ server.registerTool(
     });
     const data = await res.json();
     const guilds = data.map(guild => {
-      return {id: guild.id, name: guild.name, owner: guild.owner}
+      return { id: guild.id, name: guild.name, owner: guild.owner }
     })
-    
+
     return {
-      content: [{ type: "text", text: JSON.stringify(guilds, null, 2)}]
+      content: [{ type: "text", text: JSON.stringify(guilds, null, 2) }]
     }
   },
 );
@@ -228,7 +274,7 @@ app.use(express.json());
 
 app.post("/mcp", async (req, res) => {
   console.log("/mcp");
-  
+
   const transport = new StreamableHTTPServerTransport({
     sessionIdGenerator: undefined,
     enableJsonResponse: true,
@@ -242,10 +288,16 @@ app.post("/mcp", async (req, res) => {
   await transport.handleRequest(req, res, req.body);
 });
 
+app.get("/", async (req, res) => {
+  console.log("/");
+  res.json({ message: "Hello world !", env: process.env.DISCORD_TOKEN });
+})
+
+
 const port = parseInt(3000);
 app
   .listen(port, () => {
-    console.log(`Demo MCP Server running on http://localhost:${port}/mcp`);
+    console.log(`MCP Server running on http://localhost:${port}/mcp`);
   })
   .on("error", (error) => {
     console.error("Server error:", error);
